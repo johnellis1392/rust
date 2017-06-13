@@ -48,6 +48,34 @@ impl <A> Matrix<A> {
 }
 
 
+
+/**
+ * Trait representing the break function.
+ * Based on haskell's break:
+ * break :: (a -> Bool) -> [a] -> ([a], [a])
+ */
+pub trait Break<A> where Self: Sized {
+    fn break_at(self, i: usize) -> Result<(Self, Self), String> where A: Clone;
+//    fn break_when(&self, pred: Fn(A) -> bool) -> (Self, Self);
+}
+
+
+// TODO: Find a better way to write this if there is one
+impl <A> Break<A> for Vec<A> {
+    fn break_at(self, i:usize) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
+        if i > self.len() {
+            Err(format!("Invalid size given to function Vec<A>.break: {size}", size=i))
+        } else {
+            let length = self.len();
+            let v1 = self[0..i].to_vec();
+            let v2 = self[i..length].to_vec();
+            Ok((v1, v2))
+        }
+    }
+}
+
+
+
 /**
  * Transform a vector into a 2-dimensional vector with the specified size.
  */
@@ -90,7 +118,7 @@ pub fn seq<A>(a: Vec<Option<A>>) -> Option<Vec<A>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{seq, transpose, Elem, Matrix};
+    use super::{seq, transpose, Elem, Matrix, Break};
 
     // Seq
     #[test]
@@ -187,6 +215,32 @@ mod tests {
             let elements: Vec<i32> = vec![0,1,2,3,4,5,6,7,8,9]; // Length doesn't match params
             let matrix = Matrix::new(3, 3, elements);
             assert!(matrix.is_err());
+        }
+
+    }
+
+
+    #[cfg(test)]
+    mod break_at {
+        use super::{Break};
+
+        #[test]
+        fn test_break_splits_vector_in_half() {
+            let elements = vec![1,2,3,4,5,6,7];
+            assert_eq!(elements.break_at(3), Ok((vec![1,2,3], vec![4,5,6,7])));
+
+            let elements = vec![1,2];
+            assert_eq!(elements.break_at(1), Ok((vec![1], vec![2])));
+
+            let elements = vec![1,2,3,4,5,6];
+            assert_eq!(elements.break_at(6), Ok((vec![1,2,3,4,5,6], vec![])));
+        }
+
+
+        #[test]
+        fn test_break_returns_error_on_invalid_values() {
+            let elements = vec![1,2,3];
+            assert!(elements.break_at(4).is_err());
         }
 
     }
