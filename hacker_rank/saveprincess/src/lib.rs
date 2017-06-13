@@ -60,7 +60,6 @@ pub trait Break<A> where Self: Sized {
 }
 
 
-// TODO: Find a better way to write this if there is one
 impl <A> Break<A> for Vec<A> {
     fn break_at(self, i:usize) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
         if i > self.len() {
@@ -72,6 +71,19 @@ impl <A> Break<A> for Vec<A> {
             Ok((v1, v2))
         }
     }
+
+
+    // Alternate method
+//    fn break_at(self, i:usize) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
+//        if i > self.len() {
+//            Err(format!("Invalid size given to function Vec<A>.break: {size}", size=i))
+//        } else {
+//            let length = self.len();
+//            let v1 = self.iter().cloned().take(i).collect();
+//            let v2 = self.into_iter().skip(i).take(length - i).collect();
+//            Ok((v1, v2))
+//        }
+//    }
 }
 
 
