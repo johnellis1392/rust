@@ -48,6 +48,15 @@ impl <A> Matrix<A> {
 }
 
 
+/**
+ * Partial function application macro
+ */
+// macro_rules! {
+//     ($expression:expr) => (
+//         || $expression
+//     )
+// };
+
 
 /**
  * Trait representing the break function.
@@ -56,7 +65,7 @@ impl <A> Matrix<A> {
  */
 pub trait Break<A> where Self: Sized {
     fn break_at(self, i: usize) -> Result<(Self, Self), String> where A: Clone;
-//    fn break_when(&self, pred: Fn(A) -> bool) -> (Self, Self);
+    // fn break_when(self, pred: Fn(A) -> bool) -> Result<(Self, Self), String> where A: Clone;
 }
 
 
@@ -84,6 +93,12 @@ impl <A> Break<A> for Vec<A> {
 //            Ok((v1, v2))
 //        }
 //    }
+
+    // fn break_when(self, pred: Fn(A) -> bool) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
+    //     let v1: Vec<A> = self.iter().cloned().take_while(pred).collect();
+    //     let v2: Vec<A> = self.into_iter().skip_while(pred).collect();
+    //     Ok((v1, v2))
+    // }
 }
 
 
@@ -181,6 +196,19 @@ mod tests {
 
 
 
+    #[cfg(test)]
+    mod partial {
+
+        #[test]
+        fn test_partial_expands_function() {
+            let f = partial!(_ * 2);
+            let expected_result = 4;
+            let result = f(2)
+            assert_eq!(result, expected_result);
+        }
+
+    }
+
 
     #[cfg(test)]
     mod elem {
@@ -237,7 +265,7 @@ mod tests {
         use super::{Break};
 
         #[test]
-        fn test_break_splits_vector_in_half() {
+        fn test_break_at_splits_vector_in_half() {
             let elements = vec![1,2,3,4,5,6,7];
             assert_eq!(elements.break_at(3), Ok((vec![1,2,3], vec![4,5,6,7])));
 
@@ -248,14 +276,25 @@ mod tests {
             assert_eq!(elements.break_at(6), Ok((vec![1,2,3,4,5,6], vec![])));
         }
 
-
         #[test]
-        fn test_break_returns_error_on_invalid_values() {
+        fn test_break_at_returns_error_on_invalid_values() {
             let elements = vec![1,2,3];
             assert!(elements.break_at(4).is_err());
         }
 
+
+        // #[test]
+        // fn test_break_when_splits_vector_in_half() {
+        //     let elements = vec![1,2,3,4,5,6,7];
+        //     assert_eq!(elements.break_when(|i| i > 3), Ok((vec![1,2,3], vec![4,5,6,7])));
+        //
+        //     let elements = vec![1,2];
+        //     assert_eq!(elements.break_when(|i| i > 1), Ok((vec![1], vec![2])));
+        //
+        //     let elements = vec![1,2,3,4,5,6];
+        //     assert_eq!(elements.break_when(|i| > 6), Ok((vec![1,2,3,4,5,6], vec![])));
+        // }
+
     }
 
 }
-
