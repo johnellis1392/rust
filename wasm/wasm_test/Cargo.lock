@@ -1,0 +1,4 @@
+[root]
+name = "wasm_test"
+version = "0.1.0"
+

@@ -1,0 +1,10 @@
+[package]
+name = "wasm_test"
+version = "0.1.0"
+authors = ["John Ellis <john.ellis1392@gmail.com>"]
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+[dependencies]
