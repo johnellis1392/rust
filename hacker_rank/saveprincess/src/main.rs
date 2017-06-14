@@ -40,11 +40,11 @@ fn with_prompt<F, A>(prompt: &'static str, callback: F) -> A where F: Fn() -> A 
 
 fn main() {
     // let args = std::env::args();
-    // let stdin = io::stdin();
-    // let num_lines = read_line(stdin);
     let result = with_prompt("", || read_lines(io::stdin(), 1))
         .and_then(|n| with_prompt("Enter line: ", || read_lines(io::stdin(), n)))
-        .and_then(|vector| )
+        .and_then(Matrix::new)
+        // .map(|vector| vector.map(String::into_bytes))
+        // .and_then(|vector| Matrix::new)
 
     // match with_prompt("Enter text: ", || read_lines(io::stdin(), 3)) {
     //     Ok(s) => {
