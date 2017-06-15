@@ -45,6 +45,29 @@ impl <A> Matrix<A> {
         }
     }
 
+    // fn validate_lengths(vector: Vec<Vec<A>>) -> Result<Vec<Vec<A>>, String> {
+    //     let lengths: Vec<usize> = vector.iter().map(|i| i.len()).collect();
+    //     match lengths.pop() {
+    //         Some(first) => {
+    //             match lengths.iter().all(|&i| i == first) {
+    //                 true => Ok(vector),
+    //                 false => Err("Invalid element vector supplied to Matrix".to_owned()),
+    //             }
+    //         },
+    //         None => Ok(vector),
+    //     }
+    //
+    //     vector.iter().map(|i| i.len()).collect()
+    //         .
+    //         // .map(|first| )
+    //         // .ok_orr("Invalid element vector supplied to Matrix".to_owned())
+    // }
+    //
+    // pub fn from_vec(vector: Vec<Vec<A>>) -> Result<Matrix<A>, String> {
+    //     Matrix::validate_lengths(vector)
+    //         .map()
+    // }
+    //
 }
 
 
@@ -64,12 +87,15 @@ impl <A> Matrix<A> {
  * break :: (a -> Bool) -> [a] -> ([a], [a])
  */
 pub trait Break<A> where Self: Sized {
-    fn break_at(self, i: usize) -> Result<(Self, Self), String> where A: Clone;
-    // fn break_when(self, pred: Fn(A) -> bool) -> Result<(Self, Self), String> where A: Clone;
+    fn break_at(self, i: usize) -> Result<(Self, Self), String>
+        where A: Clone;
+    fn break_when<F>(self, pred: F) -> (Self, Self)
+        where A: Clone, F: Fn(&A) -> bool;
 }
 
 
 impl <A> Break<A> for Vec<A> {
+
     fn break_at(self, i:usize) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
         if i > self.len() {
             Err(format!("Invalid size given to function Vec<A>.break: {size}", size=i))
@@ -94,11 +120,25 @@ impl <A> Break<A> for Vec<A> {
 //        }
 //    }
 
-    // fn break_when(self, pred: Fn(A) -> bool) -> Result<(Vec<A>, Vec<A>), String> where A: Clone {
-    //     let v1: Vec<A> = self.iter().cloned().take_while(pred).collect();
-    //     let v2: Vec<A> = self.into_iter().skip_while(pred).collect();
-    //     Ok((v1, v2))
-    // }
+    fn break_when<F>(self, pred: F) -> (Vec<A>, Vec<A>)
+            where A: Clone, F: Fn(&A) -> bool {
+        let v1: Vec<A> = self.iter().cloned().take_while(|i| pred(i)).collect();
+        let v2: Vec<A> = self.into_iter().skip_while(|i| pred(i)).collect();
+        (v1, v2)
+    }
+
+}
+
+
+// Trait representing a pure-functional pop operation
+pub trait PPop<A> where Self: Sized {
+    fn ppop(self) -> Option<(A, Self)>;
+}
+
+impl <A> PPop<A> for Vec<A> {
+    fn ppop(mut self) -> Option<(A, Self)> {
+        self.pop().map(|i| (i, self))
+    }
 }
 
 
@@ -145,7 +185,7 @@ pub fn seq<A>(a: Vec<Option<A>>) -> Option<Vec<A>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{seq, transpose, Elem, Matrix, Break};
+    use super::{seq, transpose, Elem, Matrix, Break, PPop};
 
     // Seq
     #[test]
@@ -199,13 +239,13 @@ mod tests {
     #[cfg(test)]
     mod partial {
 
-        #[test]
-        fn test_partial_expands_function() {
-            let f = partial!(_ * 2);
-            let expected_result = 4;
-            let result = f(2)
-            assert_eq!(result, expected_result);
-        }
+        // #[test]
+        // fn test_partial_expands_function() {
+        //     let f = partial!(_ * 2);
+        //     let expected_result = 4;
+        //     let result = f(2);
+        //     assert_eq!(result, expected_result);
+        // }
 
     }
 
@@ -257,6 +297,59 @@ mod tests {
             assert!(matrix.is_err());
         }
 
+        // #[test]
+        // fn test_validate_lengths_should_return_vector_on_success() {
+        //     let input: Vec<Vec<u32>> = vec![
+        //         vec![1,2,3],
+        //         vec![4,5,6],
+        //         vec![7,8,9],
+        //     ];
+        //     let output: Result<Matrix<u32>, String> = Matrix::validate_lengths(input);
+        //     assert_eq!(output, input);
+        // }
+        //
+        // #[test]
+        // fn test_validate_lengths_should_return_error_on_failure() {
+        //     let input: Vec<Vec<u32>> = vec![
+        //         vec![1,2,3],
+        //         vec![4],
+        //         vec![5,6],
+        //     ];
+        //     let output: Result<Matrix<u32>, String> = Matrix::validate_lengths(input);
+        //     assert!(output.is_err());
+        // }
+        //
+        // #[test]
+        // fn test_from_vec_should_create_matrix() {
+        //     let input: Vec<Vec<u32>> = vec![
+        //         vec![1,2,3],
+        //         vec![4,5,6],
+        //         vec![7,8,9],
+        //     ];
+        //     let output: Result<Matrix<u32>, String> = Matrix::from_vec(input);
+        //     let expected_output: Matrix<u32> = Ok(Matrix {
+        //         width: 3usize,
+        //         height: 3usize,
+        //         elements: vec![
+        //             vec![1,2,3],
+        //             vec![4,5,6],
+        //             vec![7,8,9],
+        //         ]
+        //     });
+        //     assert_eq!(output, expected_output);
+        // }
+        //
+        // #[test]
+        // fn test_from_vec_should_return_error_on_mismatched_lengths() {
+        //     let input: Vec<Vec<u32>> = vec![
+        //         vec![1,2,3],
+        //         vec![4],
+        //         vec![5,6],
+        //     ];
+        //     let output: Result<Matrix<u32>, String> = Matrix::from_vec(input);
+        //     assert!(output.is_err());
+        // }
+        //
     }
 
 
@@ -283,18 +376,39 @@ mod tests {
         }
 
 
-        // #[test]
-        // fn test_break_when_splits_vector_in_half() {
-        //     let elements = vec![1,2,3,4,5,6,7];
-        //     assert_eq!(elements.break_when(|i| i > 3), Ok((vec![1,2,3], vec![4,5,6,7])));
-        //
-        //     let elements = vec![1,2];
-        //     assert_eq!(elements.break_when(|i| i > 1), Ok((vec![1], vec![2])));
-        //
-        //     let elements = vec![1,2,3,4,5,6];
-        //     assert_eq!(elements.break_when(|i| > 6), Ok((vec![1,2,3,4,5,6], vec![])));
-        // }
+        #[test]
+        fn test_break_when_splits_vector_in_half() {
+            let elements = vec![1,2,3,4,5,6,7];
+            assert_eq!(elements.break_when(|&i| i <= 3), (vec![1,2,3], vec![4,5,6,7]));
+
+            let elements = vec![1,2];
+            assert_eq!(elements.break_when(|&i| i <= 1), (vec![1], vec![2]));
+
+            let elements = vec![1,2,3,4,5,6];
+            assert_eq!(elements.break_when(|&i| i < 10), (vec![1,2,3,4,5,6], vec![]));
+        }
 
     }
 
+
+    #[cfg(test)]
+    mod ppop {
+        use super::{PPop};
+
+        #[test]
+        fn it_should_return_proper_result() {
+            let input = vec![1,2,3];
+            let output = input.ppop();
+            assert!(output.is_some());
+            assert_eq!(output, Some((3, vec![1,2])));
+        }
+
+        #[test]
+        fn it_should_return_an_error_for_empty_vectors() {
+            let input: Vec<u32> = vec![];
+            let output = input.ppop();
+            assert!(output.is_none());
+        }
+
+    }
 }
