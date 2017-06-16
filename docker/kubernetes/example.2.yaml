@@ -1,0 +1,49 @@
+# Create a service for load-balancing between the pods
+apiVersion: apps/v1beta1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: MyApp # This field is used to select the pods which have a `label` attribute set to `app=MyApp`
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 6379
+
+kind: Service
+metadata:
+  name: load-balancer
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+
+# Example deployment configuration, launching 3
+# replicas of nginx
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: redis # Used by service to specify which pods to target
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
