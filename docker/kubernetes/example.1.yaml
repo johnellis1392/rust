@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: nginxcontainer
-          image: nginx: latest
-          imagePullPolicy: always
+          image: nginx:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

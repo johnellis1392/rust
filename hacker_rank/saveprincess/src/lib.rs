@@ -45,29 +45,28 @@ impl <A> Matrix<A> {
         }
     }
 
-    // fn validate_lengths(vector: Vec<Vec<A>>) -> Result<Vec<Vec<A>>, String> {
-    //     let lengths: Vec<usize> = vector.iter().map(|i| i.len()).collect();
-    //     match lengths.pop() {
-    //         Some(first) => {
-    //             match lengths.iter().all(|&i| i == first) {
-    //                 true => Ok(vector),
-    //                 false => Err("Invalid element vector supplied to Matrix".to_owned()),
-    //             }
-    //         },
-    //         None => Ok(vector),
-    //     }
-    //
-    //     vector.iter().map(|i| i.len()).collect()
-    //         .
-    //         // .map(|first| )
-    //         // .ok_orr("Invalid element vector supplied to Matrix".to_owned())
-    // }
-    //
-    // pub fn from_vec(vector: Vec<Vec<A>>) -> Result<Matrix<A>, String> {
-    //     Matrix::validate_lengths(vector)
-    //         .map()
-    // }
-    //
+    fn validate_lengths(vector: Vec<Vec<A>>) -> Result<Vec<Vec<A>>, String> {
+        let mut lengths: Vec<usize> = vector.iter().map(|i| i.len()).collect();
+        match lengths.pop() {
+            Some(first) => {
+                match lengths.iter().all(|&i| i == first) {
+                    true => Ok(vector),
+                    false => Err("Invalid element vector supplied to Matrix".to_owned()),
+                }
+            },
+            None => Ok(vector),
+        }
+    }
+
+    pub fn from_vec(vector: Vec<Vec<A>>) -> Result<Matrix<A>, String> {
+        Matrix::validate_lengths(vector)
+            .map(|elements| Matrix {
+                width: elements.len(),
+                height: elements.first().map(Vec::len).unwrap_or(0),
+                elements: elements,
+            })
+    }
+
 }
 
 
