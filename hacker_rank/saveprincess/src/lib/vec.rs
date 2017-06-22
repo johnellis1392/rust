@@ -86,28 +86,10 @@ pub fn transpose<A>(mut elements: Vec<A>, width: usize, height: usize) -> Result
 
 
 
-/**
- * Turn a list of non-deterministic values into a result of a list.
- * Based on haskell's sequence function:
- * sequence :: (Monad m, Traversable t) => t (m a) -> m (t a)
- */
-pub fn seq<A>(a: Vec<Option<A>>) -> Option<Vec<A>> {
-    a.into_iter()
-        .fold(Some(vec![]), |res, i| {
-            match i {
-                None => None,
-                Some(value) => res.map(|mut acc| {
-                    acc.push(value);
-                    acc
-                })
-            }
-        })
-}
-
 
 #[cfg(test)]
 mod test {
-    use super::{Break, PPop, transpose, seq};
+    use super::{Break, PPop, transpose};
 
 
     #[cfg(test)]
@@ -201,29 +183,6 @@ mod test {
             let input: Vec<i32> = vec![1,2,3,4,5,6,7,8,9];
             let output = transpose(input, 3, 4);
             assert!(output.is_err());
-        }
-
-    }
-
-
-    #[cfg(test)]
-    mod seq {
-        use super::{seq};
-
-        #[test]
-        fn test_seq_should_return_option_of_array() {
-            let input: Vec<Option<i32>> = vec![Some(1),Some(2),Some(3)];
-            let output: Option<Vec<i32>> = seq(input);
-            let expected_output: Option<Vec<i32>> = Some(vec![1,2,3]);
-            assert_eq!(output, expected_output);
-        }
-
-        #[test]
-        fn test_seq_returns_none_on_invalid_array() {
-            let input: Vec<Option<i32>> = vec![Some(1),None,Some(3)];
-            let output: Option<Vec<i32>> = seq(input);
-            let expected_output: Option<Vec<i32>> = None;
-            assert_eq!(output, expected_output);
         }
 
     }
